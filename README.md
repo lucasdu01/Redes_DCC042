@@ -83,4 +83,3 @@ python client_B.py  # Em outro terminal
 - Ambas as versões utilizam TCP (`socket.SOCK_STREAM`).
 - O cliente simplesmente envia mensagens ao servidor e recebe eco (echo) de volta.
 - O código pode ser adaptado facilmente para testar concorrência com múltiplos clientes.
-```
