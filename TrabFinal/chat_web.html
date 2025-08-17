@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Criptografado - Grupos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .group-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 40px;
+        }
+
+        .login-screen h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .group-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .group-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .group-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .group-btn:hover:not(.active) {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.other {
+            background: white;
+            border: 1px solid #eee;
+            margin-right: auto;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 60%;
+            font-style: italic;
+        }
+
+        .message-header {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: #4facfe;
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* Scrollbar personalizada */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Responsivo */
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                height: 90vh;
+            }
+
+            .header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .group-selector {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela de Login -->
+        <div id="loginScreen" class="login-screen">
+            <h2>🔐 Chat Criptografado com Grupos</h2>
+            <div class="form-group">
+                <label for="username">Nome de Usuário:</label>
+                <input type="text" id="username" placeholder="Digite seu nome (mín. 2 caracteres)" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="groupSelect">Escolha o Grupo:</label>
+                <select id="groupSelect">
+                    <option value="1">🗂️ Grupo 1</option>
+                    <option value="2">🗂️ Grupo 2</option>
+                    <option value="3">🗂️ Grupo 3</option>
+                </select>
+            </div>
+            <button id="connectBtn" class="btn">🚀 Conectar ao Chat</button>
+            <div id="loginError" class="error" style="display: none;"></div>
+            <div id="loginStatus" class="status">Digite seu nome e escolha um grupo para começar</div>
+        </div>
+
+        <!-- Tela do Chat -->
+        <div id="chatScreen" class="chat-screen">
+            <div class="header">
+                <h1>🔐 Chat Criptografado</h1>
+                <div class="group-info">
+                    <span id="currentUser">Usuário</span> - <span id="currentGroup">Grupo 1</span>
+                </div>
+            </div>
+
+            <div class="group-selector">
+                <button class="group-btn active" data-group="1">🗂️ Grupo 1</button>
+                <button class="group-btn" data-group="2">🗂️ Grupo 2</button>
+                <button class="group-btn" data-group="3">🗂️ Grupo 3</button>
+            </div>
+
+            <div id="messages" class="messages">
+                <!-- Mensagens aparecerão aqui -->
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="messageInput" class="message-input" placeholder="Digite sua mensagem..." maxlength="500">
+                <button id="sendBtn" class="send-btn">📤 Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChatClient {
+            constructor() {
+                this.ws = null;
+                this.username = '';
+                this.currentGroup = 1;
+                this.connected = false;
+                
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Login
+                document.getElementById('connectBtn').addEventListener('click', () => this.connect());
+                document.getElementById('username').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.connect();
+                });
+
+                // Chat
+                document.getElementById('sendBtn').addEventListener('click', () => this.sendMessage());
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+
+                // Grupos
+                document.querySelectorAll('.group-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const group = parseInt(btn.dataset.group);
+                        this.changeGroup(group);
+                    });
+                });
+            }
+
+            connect() {
+                const username = document.getElementById('username').value.trim();
+                const group = parseInt(document.getElementById('groupSelect').value);
+
+                if (!username || username.length < 2) {
+                    this.showError('Nome deve ter pelo menos 2 caracteres!');
+                    return;
+                }
+
+                this.username = username;
+                this.currentGroup = group;
+
+                this.showStatus('Conectando...');
+                document.getElementById('connectBtn').disabled = true;
+
+                try {
+                    this.ws = new WebSocket('ws://localhost:8765');
+                    
+                    this.ws.onopen = () => {
+                        console.log('Conectado ao WebSocket');
+                        this.ws.send(JSON.stringify({
+                            type: 'join',
+                            username: this.username,
+                            group: this.currentGroup
+                        }));
+                    };
+
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    };
+
+                    this.ws.onclose = () => {
+                        console.log('Conexão WebSocket fechada');
+                        this.connected = false;
+                        if (document.getElementById('chatScreen').style.display !== 'none') {
+                            this.showError('Conexão perdida com o servidor');
+                        }
+                        document.getElementById('connectBtn').disabled = false;
+                    };
+
+                    this.ws.onerror = (error) => {
+                        console.error('Erro WebSocket:', error);
+                        this.showError('Erro ao conectar. Verifique se o servidor está rodando.');
+                        document.getElementById('connectBtn').disabled = false;
+                    };
+
+                } catch (error) {
+                    console.error('Erro ao conectar:', error);
+                    this.showError('Erro ao conectar ao servidor');
+                    document.getElementById('connectBtn').disabled = false;
+                }
+            }
+
+            handleMessage(data) {
+                switch (data.type) {
+                    case 'join_response':
+                        if (data.success) {
+                            this.connected = true;
+                            this.showChatScreen();
+                        } else {
+                            this.showError(data.error || 'Erro ao entrar no chat');
+                            document.getElementById('connectBtn').disabled = false;
+                        }
+                        break;
+
+                    case 'change_group_response':
+                        if (data.success) {
+                            this.currentGroup = data.group;
+                            this.updateGroupDisplay();
+                            this.clearMessages();
+                            this.addSystemMessage(`Você entrou no Grupo ${data.group}`);
+                        } else {
+                            this.showError('Erro ao trocar de grupo');
+                        }
+                        break;
+
+                    case 'message':
+                        this.addMessage(data.username, data.content, data.timestamp, false);
+                        break;
+
+                    case 'system':
+                        this.addSystemMessage(data.message);
+                        break;
+
+                    default:
+                        console.log('Mensagem não reconhecida:', data);
+                }
+            }
+
+            sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+
+                if (!message || !this.connected) return;
+
+                this.ws.send(JSON.stringify({
+                    type: 'message',
+                    content: message
+                }));
+
+                this.addMessage(this.username, message, new Date().toLocaleTimeString(), true);
+                input.value = '';
+            }
+
+            changeGroup(group) {
+                if (group === this.currentGroup || !this.connected) return;
+
+                this.ws.send(JSON.stringify({
+                    type: 'change_group',
+                    group: group
+                }));
+            }
+
+            addMessage(username, content, timestamp, isUser) {
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'other'}`;
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'message-header';
+                headerDiv.textContent = isUser ? `Você - ${timestamp}` : `${username} - ${timestamp}`;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = content;
+
+                messageDiv.appendChild(headerDiv);
+                messageDiv.appendChild(contentDiv);
+                messagesDiv.appendChild(messageDiv);
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            addSystemMessage(message) {
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message system';
+                messageDiv.textContent = message;
+                messagesDiv.appendChild(messageDiv);
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            clearMessages() {
+                document.getElementById('messages').innerHTML = '';
+            }
+
+            showChatScreen() {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('chatScreen').style.display = 'flex';
+                this.updateGroupDisplay();
+                this.addSystemMessage(`Bem-vindo ao Grupo ${this.currentGroup}! Suas mensagens são criptografadas automaticamente.`);
+                document.getElementById('messageInput').focus();
+            }
+
+            updateGroupDisplay() {
+                document.getElementById('currentUser').textContent = this.username;
+                document.getElementById('currentGroup').textContent = `Grupo ${this.currentGroup}`;
+
+                document.querySelectorAll('.group-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (parseInt(btn.dataset.group) === this.currentGroup) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            showStatus(message) {
+                document.getElementById('loginStatus').textContent = message;
+            }
+        }
+
+        // Inicializa o chat quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatClient();
+        });
+    </script>
+</body>
+</html>

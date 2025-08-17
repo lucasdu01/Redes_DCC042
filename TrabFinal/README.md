@@ -13,16 +13,23 @@ Sistema de chat multiusuário com **criptografia automática** e **múltiplos gr
 - 👥 **Chat multiusuário** com suporte a múltiplos clientes simultâneos
 - 🔄 **Troca dinâmica** entre grupos durante a sessão
 - 🛡️ **Isolamento total** entre grupos (mensagens não cruzam)
+- 🌐 **Interface web moderna** além do terminal tradicional
+- 📱 **Design responsivo** compatível com desktop e mobile
 
 ### **Estrutura do Projeto**
 ```
 TrabFinal/
 ├── 📄 chat_server.py			# Servidor multithread com suporte a grupos
-├── 📄 chat_client.py           # Cliente com seleção e troca de grupos  
+├── 📄 chat_client.py           # Cliente terminal com seleção e troca de grupos  
 ├── 📄 crypto_utils.py          # Módulo criptografia AES-256 multigrupo
+├── 🌐 web_chat_server.py       # Servidor WebSocket para interface web
+├── 🌐 chat_web.html            # Interface web moderna e responsiva
+├── 🌐 web_server.py            # Servidor HTTP para servir a interface
+├── 🌐 start_web_chat.py        # Inicializador automático da interface web
 ├── 📄 requirements.txt			# Dependências Python
 ├── 📄 test_chat.py				# Testes automatizados
-└── 📄 README.md				# Esta documentação
+├── 📄 README.md				# Esta documentação
+└── 📄 WEB_INTERFACE.md         # Documentação específica da interface web
 ```
 
 ---
@@ -106,9 +113,27 @@ Cliente C ←→ [AES-256] ←→ Threading  ←→ [AES-256] ←→ Cliente F
 pip install -r requirements.txt
 ```
 
-### **Passo 1: Iniciar Servidor**
+### **Opção 1: Interface Web (Recomendado) 🌐**
+```bash
+python start_web_chat.py
+```
+- ✅ **Inicialização automática** de todos os servidores
+- ✅ **Interface moderna** no navegador
+- ✅ **Experiência visual** completa
+- ✅ **Ideal para demonstrações**
+
+**Acesse:** `http://localhost:8080/chat_web.html`
+
+### **Opção 2: Interface Terminal 💻**
+
+**Passo 1: Iniciar Servidor**
 ```bash
 python chat_server.py
+```
+
+**Passo 2: Conectar Clientes**
+```bash
+python chat_client.py
 ```
 **Saída esperada:**
 ```
@@ -121,17 +146,27 @@ Server>
 ```
 
 **Comandos do servidor:**
-- `status` → Mostra usuários conectados
+- `status` → Mostra usuários conectados por grupo
 - `quit` ou `exit` → Encerra o servidor
 - `help` → Lista comandos
 - `Ctrl+C` → Força encerramento
 
-### **Passo 2: Conectar Clientes**
-```bash
-python chat_client.py
-```
+### **Interface Web: Fluxo de Uso 🌐**
+1. **Inicie** com `python start_web_chat.py`
+2. **Aguarde** o navegador abrir automaticamente
+3. **Digite** seu nome de usuário (mín. 2 caracteres)
+4. **Escolha** um grupo (1, 2 ou 3)
+5. **Conecte** e comece a conversar
+6. **Use botões** para trocar de grupo dinamicamente
 
-**Fluxo de conexão:**
+**Recursos da interface web:**
+- 🎨 **Design moderno** com gradientes e animações
+- 📱 **Responsivo** - funciona em mobile/tablet
+- 🔄 **Troca de grupo** com botões visuais
+- 💬 **Chat em tempo real** via WebSocket
+- 📢 **Notificações** de entrada/saída de usuários
+
+### **Interface Terminal: Fluxo de Conexão 💻**
 1. Sistema solicita nome de usuário (mín. 2 caracteres)
 2. Sistema solicita escolha do grupo (1, 2 ou 3)
 3. Conecta automaticamente ao servidor local no grupo escolhido
@@ -300,11 +335,13 @@ python test_chat.py
 
 ### **Possíveis Melhorias Futuras**
 - [ ] Troca de chaves Diffie-Hellman por grupo
-- [ ] Interface gráfica (Tkinter/Qt) com abas por grupo
+- [ ] Interface gráfica desktop (Tkinter/Qt) além da web
 - [ ] Grupos privados com senhas personalizadas
 - [ ] Banco de dados para histórico por grupo
 - [ ] Transferência de arquivos entre grupos
 - [ ] Administração avançada de grupos
+- [ ] PWA (Progressive Web App) para instalação offline
+- [ ] Notificações push no navegador
 
 ---
 
@@ -316,13 +353,15 @@ python test_chat.py
 ✅ **Criptografia automática** AES-256 com chaves distintas por grupo  
 ✅ **Isolamento total** entre grupos - zero vazamento de dados  
 ✅ **Troca dinâmica** de grupos durante a sessão  
-✅ **Interface amigável** no terminal com comandos expandidos  
+✅ **Interface dupla** - Terminal profissional + Web moderna  
+✅ **Interface web responsiva** compatível com desktop/mobile  
 ✅ **Comandos administrativos** servidor/cliente com suporte a grupos  
 ✅ **Tratamento robusto** de erros e mudanças de estado  
 ✅ **Documentação completa** e testes abrangentes  
 
 ### **Conceitos de Redes Demonstrados**
 ✅ **Sockets TCP** - Implementação prática com protocolo estendido  
+✅ **WebSockets** - Comunicação web em tempo real  
 ✅ **Threading** - Servidor concorrente com isolamento por grupo  
 ✅ **Protocolos** - Design de aplicação com seleção e troca de grupos  
 ✅ **Roteamento** - Broadcast seletivo por grupo de destino  
@@ -340,16 +379,19 @@ python test_chat.py
 
 ## 🎯 **CONCLUSÃO**
 
-Este projeto demonstra com sucesso a **aplicação prática dos conceitos fundamentais** da disciplina DCC042 - Redes de Computadores. Através da implementação de um chat criptografado com múltiplos grupos, foram explorados temas como:
+Este projeto demonstra com sucesso a **aplicação prática dos conceitos fundamentais** da disciplina DCC042 - Redes de Computadores. Através da implementação de um chat criptografado com múltiplos grupos e **interface web moderna**, foram explorados temas como:
 
-- **Programação com sockets TCP**
+- **Programação com sockets TCP e WebSockets**
 - **Threading para aplicações concorrentes**
 - **Design de protocolos de aplicação** com estados complexos
 - **Roteamento seletivo** de mensagens por grupo
-- **Segurança em comunicações de rede** com isolamento criptográfico
+- **Segurança em comunicações de rede** with isolamento criptográfico
+- **Desenvolvimento web** com HTML5, CSS3 e JavaScript
 - **Tratamento robusto de erros e exceções**
 
 O resultado é um **sistema funcional, seguro e extensível** que serve tanto como ferramenta de aprendizado quanto como base para projetos mais complexos. A implementação combina **teoria e prática**, oferecendo uma compreensão profunda dos mecanismos que sustentam as comunicações em rede modernas, incluindo conceitos avançados como **isolamento de grupos** e **criptografia multi-chave**.
+
+A **interface web responsiva** torna o projeto mais acessível e impressionante para demonstrações, enquanto mantém toda a robustez técnica do sistema original.
 
 **Status: ✅ PROJETO CONCLUÍDO E APROVADO PARA APRESENTAÇÃO**
 
