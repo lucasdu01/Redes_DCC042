@@ -4,12 +4,18 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 class ChatCrypto:
-    def __init__(self, password="chat_seguro_2025"):
+    def __init__(self, password="g1"):
         """
-        Inicializa a criptografia com uma senha padrão
+        Inicializa a criptografia com uma senha de grupo
+        """
+        self.salt = b'salt_fixo_para_demo'  # Em produção, use salt aleatório
+        self.set_password(password)
+
+    def set_password(self, password):
+        """
+        Atualiza a senha e a chave de criptografia
         """
         self.password = password.encode()
-        self.salt = b'salt_fixo_para_demo'  # Em produção, use salt aleatório
         self.key = self._derive_key()
         self.cipher = Fernet(self.key)
     

@@ -9,10 +9,29 @@ class ChatClient:
         self.host = host
         self.port = port
         self.socket = None
-        self.crypto = ChatCrypto()
+        self.group = 1  # Grupo padrão
+        self.crypto = ChatCrypto(password=f"g{self.group}")
         self.username = ""
         self.connected = False
         self.running = False
+    def change_group(self, group_num):
+        """
+        Troca o grupo de conversa
+        """
+        if group_num in [1, 2, 3]:
+            old_group = self.group
+            self.group = group_num
+            self.crypto.set_password(f"g{self.group}")
+            
+            # Notifica o servidor sobre a mudança de grupo
+            try:
+                change_msg = f"CHANGE_GROUP:{self.group}"
+                self.socket.send(change_msg.encode())
+                print(f"🔄 Grupo alterado de {old_group} para {self.group}")
+            except Exception as e:
+                print(f"❌ Erro ao notificar servidor sobre mudança de grupo: {e}")
+        else:
+            print("❌ Grupo inválido. Escolha 1, 2 ou 3.")
         
     def connect_to_server(self):
         """
@@ -24,7 +43,6 @@ class ChatClient:
             
             # Aguarda solicitação de username
             response = self.socket.recv(1024).decode()
-            
             if response == "USERNAME_REQUEST":
                 # Solicita nome de usuário
                 while True:
@@ -33,23 +51,40 @@ class ChatClient:
                         self.username = username
                         break
                     print("⚠️  Nome deve ter pelo menos 2 caracteres!")
-                
                 # Envia username
                 self.socket.send(f"USERNAME:{self.username}".encode())
-                
-                # Aguarda confirmação
-                confirmation = self.socket.recv(1024).decode()
-                if confirmation == "CONNECTION_OK":
-                    self.connected = True
-                    self.running = True
-                    print(f"✅ Conectado ao chat como '{self.username}'!")
-                    print("🔐 Todas as mensagens são criptografadas automaticamente")
-                    print("💡 Digite '/help' para ver comandos disponíveis")
-                    print("💡 Digite '/quit' para sair do chat")
-                    print("-" * 50)
-                    return True
+                # Aguarda solicitação de grupo
+                group_request = self.socket.recv(1024).decode()
+                if group_request == "GROUP_REQUEST":
+                    while True:
+                        try:
+                            group_input = input("🗂️  Escolha o grupo (1, 2 ou 3): ").strip()
+                            group_num = int(group_input)
+                            if group_num in [1, 2, 3]:
+                                self.group = group_num
+                                self.crypto.set_password(f"g{self.group}")
+                                break
+                        except ValueError:
+                            pass
+                        print("❌ Grupo inválido. Digite 1, 2 ou 3.")
+                    self.socket.send(str(self.group).encode())
+                    # Aguarda confirmação
+                    confirmation = self.socket.recv(1024).decode()
+                    if confirmation == "CONNECTION_OK":
+                        self.connected = True
+                        self.running = True
+                        print(f"✅ Conectado ao chat como '{self.username}'!")
+                        print(f"🗂️  Grupo atual: {self.group}")
+                        print("🔐 Todas as mensagens são criptografadas automaticamente")
+                        print("💡 Digite '/help' para ver comandos disponíveis")
+                        print("💡 Digite '/quit' para sair do chat")
+                        print("-" * 50)
+                        return True
+                    else:
+                        print("❌ Falha na autenticação")
+                        return False
                 else:
-                    print("❌ Falha na autenticação")
+                    print("❌ Resposta inesperada do servidor (esperado GROUP_REQUEST)")
                     return False
             else:
                 print("❌ Resposta inesperada do servidor")
@@ -112,12 +147,13 @@ class ChatClient:
         """
         Mostra comandos disponíveis
         """
-        print("\n📚 Comandos disponíveis:")
-        print("  /help    - Mostra esta ajuda")
-        print("  /quit    - Sai do chat")
-        print("  /status  - Mostra status da conexão")
-        print("  /clear   - Limpa a tela")
-        print("  Qualquer outra coisa será enviada como mensagem\n")
+    print("\n📚 Comandos disponíveis:")
+    print("  /help      - Mostra esta ajuda")
+    print("  /quit      - Sai do chat")
+    print("  /status    - Mostra status da conexão")
+    print("  /clear     - Limpa a tela")
+    print("  /grupo N   - Troca para o grupo N (1, 2 ou 3)")
+    print("  Qualquer outra coisa será enviada como mensagem\n")
     
     def show_status(self):
         """
@@ -127,7 +163,8 @@ class ChatClient:
         print(f"\n📊 Status: {status}")
         print(f"   👤 Usuário: {self.username}")
         print(f"   🌐 Servidor: {self.host}:{self.port}")
-        print(f"   🔐 Criptografia: Ativa\n")
+        print(f"   🔐 Criptografia: Ativa")
+        print(f"   🗂️  Grupo atual: {self.group}\n")
     
     def clear_screen(self):
         """
@@ -161,7 +198,6 @@ class ChatClient:
                     # Processa comandos
                     if message.startswith('/'):
                         command = message.lower().strip()
-                        
                         if command == '/quit':
                             print("👋 Saindo do chat...")
                             break
@@ -171,6 +207,12 @@ class ChatClient:
                             self.show_status()
                         elif command == '/clear':
                             self.clear_screen()
+                        elif command.startswith('/grupo'):
+                            try:
+                                group_num = int(command.split()[1])
+                                self.change_group(group_num)
+                            except (IndexError, ValueError):
+                                print("❌ Use: /grupo N (N = 1, 2 ou 3)")
                         else:
                             print("❓ Comando não reconhecido. Digite /help para ver comandos disponíveis")
                     else:
